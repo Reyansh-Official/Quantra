@@ -23,8 +23,11 @@ def run_backtest(data, signals):
     # Apply compounded growth to starting capital — gives portfolio value for every single day
     portfolio_value = compounded * start_amount
 
-    final_portfolio_value = cash + (shares * last_price)
-    total_return = ((final_portfolio_value - start_amount) / start_amount) * 100
+    # Grab the last day — that's your final portfolio value
+    final_portfolio_value = portfolio_value.iloc[-1]
+
+    # Calculate percentage gain from start to finish
+    total_return = (final_portfolio_value - start_amount) / start_amount * 100
 
     return final_portfolio_value, total_return
 
