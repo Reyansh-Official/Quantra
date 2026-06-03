@@ -1,3 +1,7 @@
+import numpy as np
+import pandas as pd
+
+
 def run_backtest(data, signals):
     start_amount = 10000
     cash = start_amount
