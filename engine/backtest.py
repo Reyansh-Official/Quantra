@@ -18,7 +18,8 @@ def run_backtest(data, signals):
     daily_market_returns = data["Close"].pct_change()
 
     # Multiply by positions — 1 means you captured that day's move, 0 means you missed it
-    strategy_returns = positions * daily_market_returns
+    strategy_returns = positions.shift(1) * daily_market_returns
+    strategy_returns = strategy_returns.fillna(0)
 
     # Add 1 to each return, then cumprod compounds them — each day builds on the last
     compounded = (1 + strategy_returns).cumprod()
