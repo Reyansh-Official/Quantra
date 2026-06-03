@@ -11,9 +11,11 @@ def run_backtest(data, signals):
     # Forward fill NaNs — carry last known position forward. Start at 0 before any buy signal.
     positions = positions.ffill().fillna(0)
 
-        if signal == "sell":
-            cash = cash + (shares * price)
-            shares = 0
+    # Calculate how much the stock price moved each day as a percentage
+    daily_market_returns = data["Close"].pct_change()
+
+    # Multiply by positions — 1 means you captured that day's move, 0 means you missed it
+    strategy_returns = positions * daily_market_returns
 
         if signal == "hold":
             pass
