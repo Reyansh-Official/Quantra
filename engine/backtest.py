@@ -20,7 +20,8 @@ def run_backtest(data, signals):
     # Add 1 to each return, then cumprod compounds them — each day builds on the last
     compounded = (1 + strategy_returns).cumprod()
 
-        last_price = price
+    # Apply compounded growth to starting capital — gives portfolio value for every single day
+    portfolio_value = compounded * start_amount
 
     final_portfolio_value = cash + (shares * last_price)
     total_return = ((final_portfolio_value - start_amount) / start_amount) * 100
