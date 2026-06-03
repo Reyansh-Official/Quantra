@@ -14,6 +14,7 @@ Otherwise → HOLD
 
 from strategies.base import Strategy
 import numpy as np
+import pandas as pd
 
 class MACrossover(Strategy):
 
@@ -25,6 +26,9 @@ class MACrossover(Strategy):
     def generate_signals(self, data):
         short_ma = data["Close"].rolling(self.short_window).mean()
         long_ma = data["Close"].rolling(self.long_window).mean()
-        signals = np.where(short_ma > long_ma, "buy", np.where(short_ma < long_ma, "sell", "hold"))
+        buy_condition = (short_ma > long_ma) &  (short_ma.shift(1) <= long_ma.shift(1))
+        sell_condition = (short_ma < long_ma) & (short_ma.shift(1) >= long_ma.shift(1))
+        raw_signals = np.where(buy_condition, "buy", np.where(sell_condition, "sell", "hold"))
+        signals = pd.Series(raw_signals, index=data.index)
         return signals
 
