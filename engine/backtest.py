@@ -8,11 +8,8 @@ def run_backtest(data, signals):
     # Convert signals to 1 (buy), 0 (sell), NaN (hold)
     positions = pd.Series(np.where(signals == "buy", 1, np.where(signals == "sell", 0, np.nan)))
 
-    for price, signal in zip(data["Close"], signals):
-        if signal == "buy":
-            if cash > price and shares == 0 :
-                shares = cash // price
-                cash = cash % price
+    # Forward fill NaNs — carry last known position forward. Start at 0 before any buy signal.
+    positions = positions.ffill().fillna(0)
 
         if signal == "sell":
             cash = cash + (shares * price)
