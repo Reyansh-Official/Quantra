@@ -17,8 +17,8 @@ def run_backtest(data, signals):
     # Multiply by positions — 1 means you captured that day's move, 0 means you missed it
     strategy_returns = positions * daily_market_returns
 
-        if signal == "hold":
-            pass
+    # Add 1 to each return, then cumprod compounds them — each day builds on the last
+    compounded = (1 + strategy_returns).cumprod()
 
         last_price = price
 
