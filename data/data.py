@@ -9,3 +9,4 @@ def get_stock_data(ticker, start_date, end_date):
 
     return ticker_data
 
+
