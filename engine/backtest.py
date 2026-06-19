@@ -43,7 +43,6 @@ def run_backtest(data, signals):
 
     records = df.to_dict('records')
 
-
     trades = []
     in_position = False
     entry_date = None
@@ -109,8 +108,49 @@ def run_backtest(data, signals):
         })
 
     # Convert the completed trade history list into a pandas DataFrame
-
     trades_df = pd.DataFrame(trades)
 
-    return final_portfolio_value, total_return, trades_df
+    # Total number of trades
+    total_trades = len(trades_df)
+
+    if total_trades > 0:
+
+        # If profit is greater than 0, then the trade is considered as a win, else it is a loss
+        winning_trades = int((trades_df['profit_dollars'] > 0).sum())
+        losing_trades = int((trades_df['profit_dollars'] < 0).sum())
+
+        metrics = {
+            'total_trades': total_trades,
+            'winning_trades': winning_trades,
+            'losing_trades': losing_trades,
+
+            # Win rate of trades
+            'win_rate': (winning_trades / total_trades),
+
+            # Average trade duration
+            'avg_trade_duration_days': float(trades_df['duration_days'].mean()),
+
+            # Best and worst return percentages for trades
+            'best_trade': float(trades_df['return_pct'].max()),
+            'worst_trade': float(trades_df['return_pct'].min()),
+
+            # Average return percentages for winning and losing trades
+            'avg_winning_trade': float(trades_df.loc[trades_df['profit_dollars'] > 0, 'return_pct'].mean()) if winning_trades > 0 else 0.0,
+            'avg_losing_trade': float(trades_df.loc[trades_df['profit_dollars'] < 0, 'return_pct'].mean()) if losing_trades > 0 else 0.0
+        }
+
+    else:
+        metrics = {
+            'total_trades': 0,
+            'winning_trades': 0,
+            'losing_trades': 0,
+            'win_rate': 0.0,
+            'avg_trade_duration_days': 0.0,
+            'best_trade': 0.0,
+            'worst_trade': 0.0,
+            'avg_winning_trade': 0.0,
+            'avg_losing_trade': 0.0
+        }
+
+    return final_portfolio_value, total_return, trades_df, metrics
 
