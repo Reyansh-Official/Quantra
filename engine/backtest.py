@@ -33,6 +33,84 @@ def run_backtest(data, signals):
     # Calculate percentage gain from start to finish
     total_return = (final_portfolio_value - start_amount) / start_amount * 100
 
-    return final_portfolio_value, total_return
+    df = pd.DataFrame({
+        'Close': data["Close"],
+        'Signals': signals,
+    }, index=data.index)
 
+    df = df.reset_index()
+    df.columns = ['Date' if col in ['index', 'Date'] else col for col in df.columns]
+
+    records = df.to_dict('records')
+
+
+    trades = []
+    in_position = False
+    entry_date = None
+    entry_price = None
+
+    for row in records:
+        current_date = row["Date"]
+        current_close = row["Close"]
+        current_signal = row["Signals"]
+
+        if current_signal == "buy" and not in_position:
+            in_position = True
+            entry_price = current_close
+            entry_date = current_date
+
+        elif current_signal == "sell" and in_position:
+            exit_date = current_date
+            exit_price = current_close
+
+            # Calculate target metrics
+            profit_dollars = exit_price - entry_price
+            return_pct = (profit_dollars / entry_price) * 100
+            duration_days = (exit_date - entry_date).days
+
+            trades.append({
+                'entry_date': entry_date,
+                'entry_price': entry_price,
+                'exit_date': exit_date,
+                'exit_price': exit_price,
+                'profit_dollars': profit_dollars,
+                'return_pct': return_pct,
+                'duration_days': duration_days,
+                'exit_reason': 'signal'
+            })
+
+            #Resetting state memory for the next trade
+            in_position = False
+            entry_price = None
+            entry_date = None
+
+    # ==========================================
+    # FORCE-CLOSE LOGIC
+    # ==========================================
+
+    if in_position and records:
+        last_row = records[-1]
+        exit_date = last_row['Date']
+        exit_price = last_row['Close']
+
+        profit_dollars = exit_price - entry_price
+        return_pct = (profit_dollars / entry_price) * 100
+        duration_days = (exit_date - entry_date).days
+
+        trades.append({
+            'entry_date': entry_date,
+            'entry_price': entry_price,
+            'exit_date': exit_date,
+            'exit_price': exit_price,
+            'profit_dollars': profit_dollars,
+            'return_pct': return_pct,
+            'duration_days': duration_days,
+            'exit_reason': 'forced_end'
+        })
+
+    # Convert the completed trade history list into a pandas DataFrame
+
+    trades_df = pd.DataFrame(trades)
+
+    return final_portfolio_value, total_return, trades_df
 
